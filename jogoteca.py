@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, flash
+from flask import Flask, render_template, request, redirect, session, flash, url_for
 
 app = Flask(__name__)
 app.secret_key = 'alura'
@@ -16,17 +16,18 @@ jogo2 = Jogo("Fifa", "futebol", "Xbox")
 jogo3 = Jogo("GTA", "RPG", "PS2")
 listaJogos = [jogo1, jogo2, jogo3]
 
+
 @app.route('/')
 def index():
-    ##listaJogos = ['Skyrim', 'Fifa', 'GTA']
+    # listaJogos = ['Skyrim', 'Fifa', 'GTA']
     return render_template('lista.html', titulo="Lista de Jogos", jogos=listaJogos)
 
 
 @app.route('/novo')
 def novo():
     if 'usuario_logado' not in session or session['usuario_logado'] == None:
-        return redirect('/login?proxima=novo')
-    return render_template('novo.html', titulo="Novo Cadastro")
+        return redirect(url_for('login', proxima=url_for('novo')))
+    return render_template('novo.html', titulo='Novo Jogo')
 
 
 @app.route('/criar', methods=['POST',])
@@ -36,12 +37,14 @@ def criar():
     console = request.form['console']
     jogo = Jogo(nome, categoria, console)
     listaJogos.append(jogo)
-    return redirect('/')
+    return redirect(url_for('index'))
+
 
 @app.route('/login')
 def login():
     proxima = request.args.get('proxima')
-    return render_template('login.html', proxima = proxima)
+    return render_template('login.html', proxima=proxima)
+
 
 @app.route('/autenticar', methods=['POST',])
 def autenticar():
@@ -52,16 +55,18 @@ def autenticar():
         return redirect('/{}'.format(proxima_page))
     else:
         flash('Usuário não logado.')
-        return redirect('/login')
+        return redirect(url_for('login'))
+
 
 @app.route('/logout')
 def logout():
-    if 'usuario_logado' not in session or session ['usuario_logado'] == None:
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
         flash('Usuário não logado')
-        return redirect('/')
+        return redirect(url_for('index'))
     else:
         session['usuario_logado'] = None
         flash('usuário deslogado com sucesso!')
-        return redirect('/')
+        return redirect(url_for('index'))
+
 
 app.run(debug=True)
