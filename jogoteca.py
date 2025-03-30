@@ -1,7 +1,17 @@
 from flask import Flask, render_template, request, redirect, session, flash, url_for
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.secret_key = 'alura'
+app.config['SQLAlchemy_DATABASE_uri'] = \
+    '{SGBD}://{usuario}:{senha}@{servidor}/{database}'.format(
+        SGBD='mysql+mysqlconnector',
+        usuario='root',
+        senha='admin',
+        servidor='localhost',
+        database='jogoteca'
+)
+bd = SQLAlchemy(app)
 
 
 class Jogo:
