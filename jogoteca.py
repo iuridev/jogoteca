@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 
+
 app = Flask(__name__)
 app.secret_key = 'alura'
-app.config['SQLAlchemy_DATABASE_uri'] = \
+app.config['SQLALCHEMY_DATABASE_URI'] = \
     '{SGBD}://{usuario}:{senha}@{servidor}/{database}'.format(
         SGBD='mysql+mysqlconnector',
         usuario='root',
@@ -12,6 +13,29 @@ app.config['SQLAlchemy_DATABASE_uri'] = \
         database='jogoteca'
 )
 bd = SQLAlchemy(app)
+
+# uma classe para cada tabela (POO)
+
+
+class Jogos(bd.Model):
+    id = bd.Column(bd.Integer, primary_key=True, autoincrement=True)
+    nome = bd.Column(bd.String(50), nullable=False)
+    categoria = bd.Column(bd.String(40), nullable=False)
+    console = bd.Column(bd.String(20), nullable=False)
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+
+class Usuarios(bd.Model):
+    nickname = bd.Column(bd.String(8), primary_key=True)
+    nome = bd.Column(bd.String(20), nullable=False)
+    senha = bd.Column(bd.String(100), nullable=False)
+
+    def __repr__(self):
+        return '<Name %r>' % self.name
+
+##################################################################################
 
 
 class Jogo:
