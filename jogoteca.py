@@ -37,23 +37,12 @@ class Usuarios(bd.Model):
 
 ##################################################################################
 
-
-class Jogo:
-    def __init__(self, nome, categoria, console):
-        self.nome = nome
-        self.categoria = categoria
-        self.console = console
-
-
-jogo1 = Jogo("Skyrim", "RPG", "PC")
-jogo2 = Jogo("Fifa", "futebol", "Xbox")
-jogo3 = Jogo("GTA", "RPG", "PS2")
-listaJogos = [jogo1, jogo2, jogo3]
+# ROTAS #
 
 
 @app.route('/')
 def index():
-    # listaJogos = ['Skyrim', 'Fifa', 'GTA']
+    listaJogos = Jogos.query.order_by(Jogos.id)
     return render_template('lista.html', titulo="Lista de Jogos", jogos=listaJogos)
 
 
@@ -66,11 +55,19 @@ def novo():
 
 @app.route('/criar', methods=['POST',])
 def criar():
-    nome = request.form['nome']
+    name = request.form['nome']
     categoria = request.form['categoria']
     console = request.form['console']
-    jogo = Jogo(nome, categoria, console)
-    listaJogos.append(jogo)
+
+    jogo = Jogos.query.filter_by(nome=name).first()
+    if jogo:
+        flash('Jogo ja existe no cadastro!')
+        return redirect(url_for('index'))
+
+    novo_jogo = Jogos(nome=name, categoria=categoria, console=console)
+    bd.session.add(novo_jogo)
+    bd.session.commit()
+    flash('Jogo inserido com sucesso!')
     return redirect(url_for('index'))
 
 
@@ -82,11 +79,14 @@ def login():
 
 @app.route('/autenticar', methods=['POST',])
 def autenticar():
-    if 'alohomora' == request.form['senha']:
-        proxima_page = request.form['proxima']
-        session['usuario_logado'] = request.form['usuario']
-        flash(session['usuario_logado'] + ' logado com sucesso!')
-        return redirect('/{}'.format(proxima_page))
+    usuario = Usuarios.query.filter_by(
+        nickname=request.form['usuario']).first()
+    if usuario:
+        if request.form['senha'] == usuario.senha:
+            session['usuario_logado'] = usuario.nickname
+            flash(usuario.nickname + 'logado com sucesso')
+            proxima_pagina = request.form['proxima']
+            return redirect(proxima_pagina)  # <--- link quebrado
     else:
         flash('Usuário não logado.')
         return redirect(url_for('login'))
